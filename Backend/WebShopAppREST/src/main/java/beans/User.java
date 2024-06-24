@@ -1,25 +1,33 @@
 package beans;
 
-import java.io.Serializable;
+import enums.UserRole;
+import enums.UserStatus;
 
-public class User implements Serializable {
-	
+public class User {
+	private String id;
 	private String firstName;
 	private String lastName;
-	private String email;
 	private String username;
 	private String password;
+	private String gender;
+	private String birthDate;
+	private UserRole role;
+	private UserStatus userStatus;
 	
 	public User() {
 	}
 
-	public User(String firstName, String lastName, String email, String username, String password) {
+	public User(String id, String firstName, String lastName, String username, String password, String gender, String birthDate, UserRole role, UserStatus userStatus) {
 		super();
+		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.email = email;
 		this.username = username;
 		this.password = password;
+		this.gender = gender;
+		this.birthDate = birthDate;
+		this.role = role;
+		this.userStatus = userStatus;
 	}
 
 
@@ -39,15 +47,7 @@ public class User implements Serializable {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
+	
 	public String getUsername() {
 		return username;
 	}
@@ -64,11 +64,50 @@ public class User implements Serializable {
 		this.password = password;
 	}
 
-	@Override
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public UserRole getRole() {
+		return role;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public UserStatus getUserStatus() {
+		return userStatus;
+	}
+
+	public void setUserStatus(UserStatus userStatus) {
+		this.userStatus = userStatus;
+	}
+
+	/*@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((firstName == null) ? 0 : firstName.hashCode());
 		result = prime * result + ((lastName == null) ? 0 : lastName.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
@@ -85,11 +124,6 @@ public class User implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		User other = (User) obj;
-		if (email == null) {
-			if (other.email != null)
-				return false;
-		} else if (!email.equals(other.email))
-			return false;
 		if (firstName == null) {
 			if (other.firstName != null)
 				return false;
@@ -115,9 +149,9 @@ public class User implements Serializable {
 
 	@Override
 	public String toString() {
-		return "User [firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + ", username=" + username
+		return "User [firstName=" + firstName + ", lastName=" + lastName + ", username=" + username
 				+ ", password=" + password + "]";
 	}
 
-	private static final long serialVersionUID = 6640936480584723344L;
+	private static final long serialVersionUID = 6640936480584723344L;*/
 }

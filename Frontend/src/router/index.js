@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import Login from '@/views/Login.vue'
+import Register from '@/views/RegisterView.vue'
 import WebShop from '@/views/WebShop.vue'
 import Coco from '@/views/CocoView.vue'
 import Factory from '@/views/FactoryView.vue'
@@ -18,6 +19,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
     },
     {
       path: '/webshop',

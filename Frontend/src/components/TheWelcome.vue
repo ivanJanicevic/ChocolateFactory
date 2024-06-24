@@ -4,9 +4,13 @@
 
 <template>
   <section class="welcome">
-    <h2>Welcome to your Vue 3 project!</h2>
+    <h2>Welcome to our Coco website!</h2>
     <div>
       <RouterLink to="/factories">Factory Reviews</RouterLink>
+      <br>
+      <RouterLink to="/login">Login</RouterLink>
+      <br>
+      <RouterLink to="/register">Sign up</RouterLink>
     </div>
   </section>
 </template>

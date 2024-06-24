@@ -29,7 +29,7 @@ public class FactoryDAO {
 	
 	public FactoryDAO(String contextPath) {
 		System.out.println("!");
-		this.fileLocation = "C:/Users/janic/FAX/SEMESTAR 6/Veb programiranje/CocoFactory/veb-projekat/Backend/WebShopAppREST/src/main/webapp/factories.csv";
+		this.fileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\factories.csv";
 		loadFactories(fileLocation);
 	}
 

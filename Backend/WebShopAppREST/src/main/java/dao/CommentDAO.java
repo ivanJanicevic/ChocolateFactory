@@ -16,8 +16,12 @@ public class CommentDAO {
 	private HashMap<String, Comment> comments = new HashMap<String, Comment>();
     private String fileLocation;
     
+    public CommentDAO() {
+    	
+    }
+    
     public CommentDAO(String fileLocation) {
-        this.fileLocation = "C:\\Users\\janic\\FAX\\SEMESTAR 6\\Veb programiranje\\CocoFactory\\veb-projekat\\Backend\\WebShopAppREST\\src\\main\\webapp\\comments.csv";
+        fileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\comments.csv";
         loadCommentsFromFile();
     }
     
