@@ -16,19 +16,31 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import beans.Coco;
+import beans.Factory;
 import dao.CocoDAO;
 
 @Path("/chocolates")
 public class CocoService {
 	@Context
 	ServletContext ctx;
+	private CocoDAO cocoDAO;
 	
 	@PostConstruct
 	public void init() {
-		if (ctx.getAttribute("cocoDAO") == null) {
-			ctx.setAttribute("cocoDAO", new CocoDAO(ctx.getRealPath("/")));
+		cocoDAO = (CocoDAO) ctx.getAttribute("cocoDAO");
+		if (cocoDAO == null) {
+			cocoDAO = new CocoDAO(ctx.getRealPath("/"));
+			ctx.setAttribute("cocoDAO", cocoDAO);
 		}
 	}
+	
+	@GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ArrayList<Coco> getCocos() {
+        System.out.println("Pozvana je metoda getCocos()");
+        return new ArrayList<>(cocoDAO.FindAll());
+    }
 	
 	@GET
     @Path("/factory/{factoryId}")

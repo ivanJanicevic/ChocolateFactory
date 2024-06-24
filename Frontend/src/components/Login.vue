@@ -1,91 +1,140 @@
 <template>
-    <div>
-        <h1>Login</h1>
-        <form class="login-component" @submit.prevent="login">
-            <div>
-                <label for="username">Username:</label>
-                <input type="text" id="username" v-model="username" required>
-            </div>
-            <div>
-                <label for="password">Password:</label>
-                <input type="password" id="password" v-model="password" required>
-            </div>
-            <button class="submit" type="submit">Login</button>
-
-            <br>
-
-            <p id="success">{{ success }}</p>
-            <p id="error">{{ errorMessage }}</p>
-        </form>
-    </div>
+  <div class="center-position">
+    <form class="formStyle" style="margin-top:5%;">
+      <fieldset>
+        <legend>Log in</legend>
+        <div>
+          <label for="username" class="formInputs">Username</label><br>
+          <input type="text" v-model="userCredentials.username" name="username" id="username" class="formInputs">
+        </div>
+        <div>
+          <label for="password" class="formInputs">Password</label><br>
+          <input type="password" v-model="userCredentials.password" name="password" id="password" class="formInputs">
+        </div><br>
+        <div>
+          <input type="submit" v-on:click="loginUser" value="Login" class="formInputs">
+        </div>
+        <p>{{errortext}}</p>
+      </fieldset><br>
+      <div>
+        <input type="submit" v-on:click="registerUser" value="Register" class="formInputs">
+      </div><br>
+      <div>
+        <input type="submit" v-on:click="goBack" value="Return" class="formInputs">
+      </div>
+    </form>
+  </div>
 </template>
 
-<script setup>
+<script>
 import axios from 'axios';
-import { ref } from 'vue';
+import router from '@/router';
 
+export default {
+  data() {
+    return {
+      user: {
+        id: ' ',
+        username: null,
+        password: null,
+        name: null,
+        surname: null,
+        gender: null,
+        birthDate: null,
+        role: null,
+      },
+      userCredentials: {
+        username: null,
+        password: null
+      },
+      isUsernameValid: null,
+      isPasswordValid: null,
+      errortext: ''
+    };
+  },
+  methods: {
+    loginUser(event) {
+      event.preventDefault();
+      if (!this.userCredentials.username) {
+        document.getElementsByName("username")[0].style.background = "red";
+        this.isUsernameValid = false;
+        this.errortext = 'All fields are required';
+      } else {
+        document.getElementsByName("username")[0].style.background = "white";
+        this.isUsernameValid = true;
+        this.errortext = '';
+      }
+      if (!this.userCredentials.password) {
+        document.getElementsByName("password")[0].style.background = "red";
+        this.isPasswordValid = false;
+        this.errortext = 'All fields are required';
+      } else {
+        document.getElementsByName("password")[0].style.background = "white";
+        this.isPasswordValid = true;
+        this.errortext = '';
+      }
+      if (this.isUsernameValid && this.isPasswordValid) {
+        axios.post('http://localhost:8080/WebShopAppREST/rest/user/login/', this.userCredentials)
+          .then(response => {
+            this.user = response.data;
+            if (this.user.userStatus === 'Deactivated') {
+              this.errortext = 'Your account has been deactivated.';
+              return;
+            }
+            console.log('Uloga korisnika:');
+            console.log("Uloga korisnika:" + this.user.role);
+            if (this.user.role === 'Administrator') {
+              router.push({ path: `/loggedInAdmin/${this.user.id}` });
+            } else if (this.user.role === 'Customer') {
+                this.$router.push('/factories');
+            } else if (this.user.role === 'Manager') {
+                this.$router.push('/factories');
+            } else {
+              this.errortext = 'Invalid user role';
+            }
 
-const username = ref('');
-const password = ref('');
-
-const errorMessage = ref('');
-const success = ref('');
-
-const login = () => {
-    axios.post('http://localhost:8081/WebShopAppREST/rest/login', { username: username.value, password: password.value })
-        .then(response => {
-            success.value = 'Korisnik je uspesno prijavljen.';
-            errorMessage.value = '';
-        })
-        .catch(error => {
-            success.value = '';
-            errorMessage.value = 'Pogresno korisnicko ime ili lozinka.';
-            console.error(error);
-        });
-}
-
+          })
+          .catch(error => {
+            console.error('An error occurred:', error);
+            this.errortext = `User does not exist with username: "${this.userCredentials.username}"`;
+          });
+      }
+    },
+    registerUser(event) {
+      event.preventDefault();
+      router.push(`/register`);
+    },
+    goBack(event) {
+      event.preventDefault();
+      router.push(`/`);
+    }
+  }
+};
 </script>
 
 <style scoped>
-.login-component {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin: 0 auto;
-    width: 400px;
+.center-position {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-.login-component label {
-    font-weight: bold;
-    display: block;
+.formStyle {
+  width: 300px;
 }
 
-.login-component input {
-    padding: 0.5rem;
-    border: 1px solid #797979;
-    border-radius: 0.25rem;
-    background-color: #555555;
-    color: white;
-    display: block;
-    width: 100%;
+.formInputs {
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-.login-component>.submit {
-    padding: 0.5rem;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
+fieldset {
+  border: 1px solid #ccc;
+  padding: 10px;
 }
 
-.login-component>.submit:hover {
-    background-color: #0056b3;
+legend {
+  font-weight: bold;
 }
-
-p {
-    display: block;
-}
-
-/* Add your component-specific styles here */
 </style>

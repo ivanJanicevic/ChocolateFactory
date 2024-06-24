@@ -23,7 +23,7 @@ public class CocoDAO {
 	}
 	
 	public CocoDAO(String contextPath) {
-		FileLocation = "C:\\Users\\janic\\FAX\\SEMESTAR 6\\Veb programiranje\\CocoFactory\\veb-projekat\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv";
+		FileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv";
 		LoadCocos(FileLocation);
 		System.out.println(cocos.size() + "eeeee");
 	}
@@ -87,7 +87,7 @@ public class CocoDAO {
 		System.out.println("OVde u laod je ucitano");
 		BufferedReader in = null;
 		try {
-			File file = new File("C:\\Users\\janic\\FAX\\SEMESTAR 6\\Veb programiranje\\CocoFactory\\veb-projekat\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv");
+			File file = new File(contextPath);
 			in = new BufferedReader(new FileReader(file));
 			String line, id = "", name = "", cost = "", category = "", type = "", status = "", mass = "", details = "", picture = "", stock = "", isDeleted = "", factoryId = "";
 			StringTokenizer st;
