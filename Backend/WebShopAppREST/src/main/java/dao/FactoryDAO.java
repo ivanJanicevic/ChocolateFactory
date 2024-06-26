@@ -16,25 +16,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import beans.Coco;
 import beans.Factory;
 
 public class FactoryDAO {
 	
 	private HashMap<String, Factory> factories = new HashMap<>();
+	private CocoDAO cocoDAO;
 	private String fileLocation;
 	
 	public FactoryDAO() {
-		factories.put("1", new Factory("1", "Blabla", "strpce", "http:", 2.3, false, "2.5"));
+		factories.put("1", new Factory("1", "Blabla", "strpce", "http:", 2.3, false, "2.5", null));
 	}
 	
 	public FactoryDAO(String contextPath) {
-		System.out.println("!");
+		//System.out.println("!");
 		this.fileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\factories.csv";
+		this.cocoDAO = new CocoDAO("C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv");
 		loadFactories(fileLocation);
 	}
 
 	public Collection<Factory> findAll() {
-	    System.out.println("OLEEE");
+	    //System.out.println("OLEEE");
 	    	
 	    // Ažuriranje statusa svake fabrike
 	    for (Factory factory : factories.values()) {
@@ -125,22 +128,27 @@ public class FactoryDAO {
 			StringTokenizer st;
 			System.out.println(contextPath);
 			while ((line = in.readLine()) != null) {
-				System.out.println("Petlja 1");
-				line = line.trim();
-				if (line.equals("") || line.indexOf('#') == 0)
-					continue;
-				st = new StringTokenizer(line, ";");
-				while (st.hasMoreTokens()) {
-					id = st.nextToken().trim();
-					name = st.nextToken().trim();
-					workingTime = st.nextToken().trim();
-					location = st.nextToken().trim();
-					pathToLogo = st.nextToken().trim();
-					rate = st.nextToken().trim();
-					isDeleted = st.nextToken().trim();
-					//status = st.nextToken().trim();
-				}
-				factories.put(id, new Factory(id, name, location, pathToLogo, Double.parseDouble(rate), Boolean.parseBoolean(isDeleted), workingTime));
+			    line = line.trim();
+			    if (line.equals("") || line.indexOf('#') == 0)
+			        continue;
+			    st = new StringTokenizer(line, ";");
+			    while (st.hasMoreTokens()) {
+			        id = st.nextToken().trim();
+			        name = st.nextToken().trim();
+			        workingTime = st.nextToken().trim();
+			        location = st.nextToken().trim();
+			        pathToLogo = st.nextToken().trim();
+			        rate = st.nextToken().trim();
+			        isDeleted = st.nextToken().trim();
+			        String chocolateIdsStr = st.nextToken().trim(); // Dodato čitanje chocolateIds
+			        ArrayList<Integer> chocolateIds = new ArrayList<>();
+			        String[] chocolateIdsArray = chocolateIdsStr.split(",");
+			        for (String chocolateId : chocolateIdsArray) {
+			            chocolateIds.add(Integer.parseInt(chocolateId));
+			        }
+			        factories.put(id, new Factory(id, name, location, pathToLogo, Double.parseDouble(rate),
+			                        Boolean.parseBoolean(isDeleted), workingTime, chocolateIds));
+			    }
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -157,20 +165,22 @@ public class FactoryDAO {
 	
 	private void saveFactoriesToFile() {
 	    try (BufferedWriter out = new BufferedWriter(new FileWriter(fileLocation))) {
-	        for (Factory factory : factories.values()) {
-	            String line = String.join(";",
-	                    factory.getId(),
-	                    factory.getName(),
-	                    factory.getStatus(),
-	                    factory.getLocation(),
-	                    factory.getPathToLogo(),
-	                    String.valueOf(factory.getRate()),
-	                    String.valueOf(factory.isDeleted()),
-	                    String.valueOf(factory.getWorkingTime())
-	            );
-	            out.write(line);
-	            out.newLine();
-	        }
+	    	for (Factory factory : factories.values()) {
+	    	    String chocolateIdsStr = String.join(",", factory.getChocolateIds().stream().map(String::valueOf).toArray(String[]::new));
+	    	    String line = String.join(";",
+	    	            factory.getId(),
+	    	            factory.getName(),
+	    	            factory.getStatus(),
+	    	            factory.getLocation(),
+	    	            factory.getPathToLogo(),
+	    	            String.valueOf(factory.getRate()),
+	    	            String.valueOf(factory.isDeleted()),
+	    	            String.valueOf(factory.getWorkingTime()),
+	    	            chocolateIdsStr // Dodato čuvanje chocolateIds
+	    	    );
+	    	    out.write(line);
+	    	    out.newLine();
+	    	}
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }
@@ -214,6 +224,56 @@ public class FactoryDAO {
 
 	private static boolean isWithinWorkingHours(LocalTime startTime, LocalTime endTime, LocalTime currentTime) {
 	    return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
+	}
+
+	public List<Factory> searchFactories(String factoryName, String chocolateName, String location, Double averageRating) {
+	    List<Factory> result = new ArrayList<>();
+
+	    for (Factory factory : factories.values()) {
+	        if ((factoryName == null || factory.getName().equalsIgnoreCase(factoryName)) &&
+	            (chocolateName == null || factoryContainsChocolate(factory, chocolateName)) &&
+	            (location == null || factory.getLocation().equalsIgnoreCase(location)) &&
+	            (averageRating == null || factory.getRate() >= averageRating)) {
+	            
+	            result.add(factory);
+	        }
+	    }
+
+	    return result;
+	}
+
+	public boolean factoryContainsChocolate(Factory factory, String chocolateName) {
+	    if (chocolateName == null || chocolateName.trim().isEmpty()) {
+	        return false;
+	    }
+	    
+	    String chocolateIdStr = cocoDAO.findChocolateIdByName(chocolateName);
+
+	    if (chocolateIdStr == null) {
+	        System.out.println("Čokolada nije pronađena za ime: " + chocolateName);
+	        return false;
+	    }
+
+	    Integer chocolateId;
+
+	    try {
+	        chocolateId = Integer.parseInt(chocolateIdStr);
+	    } catch (NumberFormatException e) {
+	        System.out.println("Greška prilikom parsiranja ID-ja čokolade: " + chocolateIdStr);
+	        return false;
+	    }
+
+	    if (!factory.getChocolateIds().contains(chocolateId)) {
+	        System.out.println("Fabrika ne sadrži čokoladu sa ID-jem: " + chocolateId);
+	        return false;
+	    }
+
+	    if (factory.isDeleted()) {
+	        System.out.println("Fabrika je označena kao obrisana.");
+	        return false;
+	    }
+
+	    return true;
 	}
 
 

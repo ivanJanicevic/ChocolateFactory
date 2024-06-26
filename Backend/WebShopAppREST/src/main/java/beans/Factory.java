@@ -18,7 +18,7 @@ public class Factory {
     }
     
     public Factory(String id, String name, String location, String pathToLogo, double rate,
-            boolean isDeleted, String workingTime) {
+            boolean isDeleted, String workingTime, ArrayList<Integer> chocolateIds) {
         super();
         this.id = id;
         this.name = name;
@@ -29,7 +29,7 @@ public class Factory {
         this.workingTime = workingTime;
         this.comments = new ArrayList<String>();
         this.status = "Ne radi"; // Postavljeno podrazumevano stanje na "Ne radi"
-        this.setChocolateIds(new ArrayList<Integer>());
+        this.chocolateIds = chocolateIds;
     }
 
     public String getId() {
