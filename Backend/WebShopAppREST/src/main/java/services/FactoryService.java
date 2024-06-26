@@ -1,6 +1,8 @@
 package services;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.ws.rs.*;
@@ -8,6 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import beans.Factory;
+import dao.CocoDAO;
 import dao.FactoryDAO;
 
 @Path("/factories")
@@ -71,4 +74,27 @@ public class FactoryService {
     public Factory updateFactory(@PathParam("id") String id, Factory updatedFactory) {
         return factoryDAO.updateFactory(id, updatedFactory);
     }
+    
+    @GET
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Factory> searchFactories(@QueryParam("factoryName") String factoryName,
+                                         @QueryParam("location") String location,
+                                         @QueryParam("averageRating") Double averageRating,
+                                         @QueryParam("chocolateName") String chocolateName) {
+        List<Factory> result = new ArrayList<>();
+
+        for (Factory factory : factoryDAO.findAll()) {
+            if ((factoryName == null || factoryName.trim().isEmpty() || factory.getName().toLowerCase().contains(factoryName.toLowerCase())) &&
+                (location == null || location.trim().isEmpty() || factory.getLocation().equalsIgnoreCase(location)) &&
+                (chocolateName == null || chocolateName.trim().isEmpty() || factoryDAO.factoryContainsChocolate(factory, chocolateName)) &&
+                (averageRating == null || factory.getRate() >= averageRating)) {
+            	
+            	result.add(factory);
+            }
+        }
+
+        return result;
+    }
+
 }

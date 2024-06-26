@@ -25,15 +25,32 @@ public class CocoDAO {
 	public CocoDAO(String contextPath) {
 		FileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv";
 		LoadCocos(FileLocation);
-		System.out.println(cocos.size() + "eeeee");
+		//System.out.println(cocos.size() + "eeeee");
 	}
 
 	public Collection<Coco> FindAll() {
 		return cocos.values();
 	}
+	
+	public String findChocolateIdByName(String chocolateName) {
+	    if (chocolateName == null) {
+	        return null;
+	    }
+	    for (Coco coco : cocos.values()) {
+	        if (coco.getName() != null && coco.getName().equalsIgnoreCase(chocolateName)) {
+	            System.out.println("id cokolade je: " + coco.getId());
+	            return coco.getId();
+	        }
+	    }
+	    return null;
+	}
 
 	public Coco FindCoco(String id) {
 		return cocos.containsKey(id) ? cocos.get(id) : null;
+	}
+	
+	public Coco FindCocoByName(String name) {
+		return cocos.containsKey(name) ? cocos.get(name) : null;
 	}
 	
 	public Coco UpdateCoco(String id, Coco coco) {
@@ -84,7 +101,7 @@ public class CocoDAO {
 
 
 	private void LoadCocos(String contextPath) {
-		System.out.println("OVde u laod je ucitano");
+		//System.out.println("OVde u laod je ucitano");
 		BufferedReader in = null;
 		try {
 			File file = new File(contextPath);
@@ -96,7 +113,7 @@ public class CocoDAO {
 				if (line.equals("") || line.indexOf('#') == 0)
 					continue;
 				st = new StringTokenizer(line, ";");
-			    System.out.println("Ukupno pročitano linija iz CSV datoteke: ");
+			    //System.out.println("Ukupno pročitano linija iz CSV datoteke: ");
 				while (st.hasMoreTokens()) {
 					id = st.nextToken().trim();
 					name = st.nextToken().trim();
@@ -128,7 +145,7 @@ public class CocoDAO {
 	
 	private void SaveChocolatesToFile() {
 		System.out.println(FileLocation);
-	    try (BufferedWriter out = new BufferedWriter(new FileWriter("C:\\Users\\janic\\FAX\\SEMESTAR 6\\Veb programiranje\\CocoFactory\\veb-projekat\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv"))) {
+	    try (BufferedWriter out = new BufferedWriter(new FileWriter("C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv"))) {
 	        for (Coco cocolates : cocos.values()) {
 	        	System.out.println(cocolates.getName());
 	            String line = String.join(";",
