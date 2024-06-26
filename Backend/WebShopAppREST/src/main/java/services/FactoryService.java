@@ -81,20 +81,33 @@ public class FactoryService {
     public List<Factory> searchFactories(@QueryParam("factoryName") String factoryName,
                                          @QueryParam("location") String location,
                                          @QueryParam("averageRating") Double averageRating,
-                                         @QueryParam("chocolateName") String chocolateName) {
+                                         @QueryParam("chocolateName") String chocolateName,
+                                         @QueryParam("chocolateType") String chocolateType,
+                                         @QueryParam("chocolateCategory") String chocolateCategory,
+                                         @QueryParam("isOpen") boolean isOpen) {
         List<Factory> result = new ArrayList<>();
 
         for (Factory factory : factoryDAO.findAll()) {
             if ((factoryName == null || factoryName.trim().isEmpty() || factory.getName().toLowerCase().contains(factoryName.toLowerCase())) &&
                 (location == null || location.trim().isEmpty() || factory.getLocation().equalsIgnoreCase(location)) &&
                 (chocolateName == null || chocolateName.trim().isEmpty() || factoryDAO.factoryContainsChocolate(factory, chocolateName)) &&
-                (averageRating == null || factory.getRate() >= averageRating)) {
+                (chocolateType == null || chocolateType.trim().isEmpty() || factoryDAO.factoryContainsChocolateWithType(factory, chocolateType)) &&
+                (chocolateCategory == null || chocolateCategory.trim().isEmpty() || factoryDAO.factoryContainsChocolateWithCategory(factory, chocolateCategory)) &&
+                (averageRating == null || factory.getRate() >= averageRating) &&
+                (!isOpen || factoryDAO.checkStatus(factory.getWorkingTime()).equals("Work"))) {
             	
             	result.add(factory);
             }
         }
 
         return result;
+    }
+
+    @GET
+    @Path("/sort")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Factory> sortFactories(@QueryParam("criterion") String criterion, @QueryParam("ascending") boolean ascending) {
+        return factoryDAO.sortFactories(criterion, ascending);
     }
 
 }

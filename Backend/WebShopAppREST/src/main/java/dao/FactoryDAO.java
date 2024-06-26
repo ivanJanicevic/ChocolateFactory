@@ -186,7 +186,7 @@ public class FactoryDAO {
 	    }
 	}
 	
-	public static String checkStatus(String workingHours) {
+	public String checkStatus(String workingHours) {
 	    String[] times = parseWorkingHours(workingHours);
 	    LocalTime[] timeValues = getTimeValues(times);
 
@@ -226,21 +226,108 @@ public class FactoryDAO {
 	    return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
 	}
 
-	public List<Factory> searchFactories(String factoryName, String chocolateName, String location, Double averageRating) {
+	public List<Factory> searchFactories(String factoryName, String chocolateName, String location, Double averageRating, String chocolateCategory, String chocolateType, boolean isOpen) {
 	    List<Factory> result = new ArrayList<>();
 
 	    for (Factory factory : factories.values()) {
-	        if ((factoryName == null || factory.getName().equalsIgnoreCase(factoryName)) &&
-	            (chocolateName == null || factoryContainsChocolate(factory, chocolateName)) &&
-	            (location == null || factory.getLocation().equalsIgnoreCase(location)) &&
-	            (averageRating == null || factory.getRate() >= averageRating)) {
-	            
+	        boolean matches = true;
+
+	        if (factoryName != null && !factory.getName().equalsIgnoreCase(factoryName)) {
+	            matches = false;
+	        }
+
+	        if (chocolateName != null && !factoryContainsChocolate(factory, chocolateName)) {
+	            matches = false;
+	        }
+
+	        if (location != null && !factory.getLocation().equalsIgnoreCase(location)) {
+	            matches = false;
+	        }
+
+	        if (averageRating != null && factory.getRate() < averageRating) {
+	            matches = false;
+	        }
+
+	        if (chocolateCategory != null && !factoryContainsChocolateWithCategory(factory, chocolateCategory)) {
+	            matches = false;
+	        }
+
+	        if (chocolateType != null && !factoryContainsChocolateWithType(factory, chocolateType)) {
+	            matches = false;
+	        }
+
+	        if (isOpen && !checkStatus(factory.getWorkingTime()).equals("Work")) {
+	            matches = false;
+	        }
+
+	        if (matches) {
 	            result.add(factory);
 	        }
 	    }
 
 	    return result;
 	}
+	
+	public boolean factoryContainsChocolateWithCategory(Factory factory, String category) {
+	    List<String> chocolateIds = cocoDAO.findChocolateIdsByCategory(category);
+	    
+	    if (chocolateIds.isEmpty()) {
+	        System.out.println("Nema čokolada sa kategorijom: " + category);
+	        return false;
+	    }
+	    
+	    for (String chocolateIdStr : chocolateIds) {
+	        Integer chocolateId;
+	        try {
+	            chocolateId = Integer.parseInt(chocolateIdStr);
+	        } catch (NumberFormatException e) {
+	            System.out.println("Greška prilikom parsiranja ID-ja čokolade: " + chocolateIdStr);
+	            return false;
+	        }
+	        
+	        if (factory.getChocolateIds().contains(chocolateId)) {
+	            if (factory.isDeleted()) {
+	                System.out.println("Fabrika je označena kao obrisana.");
+	                return false;
+	            }
+	            return true;
+	        }
+	    }
+
+	    System.out.println("Fabrika ne sadrži čokoladu sa odgovarajućom kategorijom.");
+	    return false;
+	}
+
+	public boolean factoryContainsChocolateWithType(Factory factory, String type) {
+	    List<String> chocolateIds = cocoDAO.findChocolateIdsByType(type);
+	    
+	    if (chocolateIds.isEmpty()) {
+	        System.out.println("Nema čokolada sa tipom: " + type);
+	        return false;
+	    }
+	    
+	    for (String chocolateIdStr : chocolateIds) {
+	        Integer chocolateId;
+	        try {
+	            chocolateId = Integer.parseInt(chocolateIdStr);
+	        } catch (NumberFormatException e) {
+	            System.out.println("Greška prilikom parsiranja ID-ja čokolade: " + chocolateIdStr);
+	            return false;
+	        }
+	        
+	        if (factory.getChocolateIds().contains(chocolateId)) {
+	            if (factory.isDeleted()) {
+	                System.out.println("Fabrika je označena kao obrisana.");
+	                return false;
+	            }
+	            return true;
+	        }
+	    }
+
+	    System.out.println("Fabrika ne sadrži čokoladu sa odgovarajućim tipom.");
+	    return false;
+	}
+
 
 	public boolean factoryContainsChocolate(Factory factory, String chocolateName) {
 	    if (chocolateName == null || chocolateName.trim().isEmpty()) {
@@ -276,6 +363,31 @@ public class FactoryDAO {
 	    return true;
 	}
 
+	public List<Factory> sortFactories(String criterion, boolean ascending) {
+        List<Factory> sortedFactories = new ArrayList<>(factories.values());
 
+        Comparator<Factory> comparator;
+
+        switch (criterion.toLowerCase()) {
+            case "name":
+                comparator = Comparator.comparing(Factory::getName);
+                break;
+            case "location":
+                comparator = Comparator.comparing(Factory::getLocation);
+                break;
+            case "rate":
+                comparator = Comparator.comparingDouble(Factory::getRate);
+                break;
+            default:
+                throw new IllegalArgumentException("Nepoznat kriterijum za sortiranje: " + criterion);
+        }
+
+        if (!ascending) {
+            comparator = comparator.reversed();
+        }
+
+        Collections.sort(sortedFactories, comparator);
+        return sortedFactories;
+    }
 
 }

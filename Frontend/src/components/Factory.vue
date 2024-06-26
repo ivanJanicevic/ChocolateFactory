@@ -17,7 +17,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="factory in filteredFactories" :key="factory.id">
+                <tr v-for="factory in sortedFactories" :key="factory.id">
                   <td>
                     <img :src="factory.pathToLogo" alt="Factory Logo" class="img-thumbnail" style="max-width: 80px;">
                   </td>
@@ -30,7 +30,7 @@
                     </button>
                   </td>
                 </tr>
-                <tr v-if="filteredFactories.length === 0">
+                <tr v-if="sortedFactories.length === 0">
                   <td colspan="5" class="text-center">Nema rezultata pretrage</td>
                 </tr>
               </tbody>
@@ -39,24 +39,69 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
+      <!-- Search Bars -->
       <div class="row gx-5 gx-lg-1 align-items-center">
         <div class="col-md-3 mb-2">
-          <input v-model="searchParams.factoryName" type="text" class="form-control" placeholder="Naziv fabrike">
+          <input v-model="searchParams.factoryName" type="text" class="form-control" placeholder="Naziv fabrike" @input="filterFactories">
         </div>
         <div class="col-md-3 mb-2">
-          <input v-model="searchParams.chocolateName" type="text" class="form-control" placeholder="Ime čokolade">
+          <input v-model="searchParams.chocolateName" type="text" class="form-control" placeholder="Ime čokolade" @input="filterFactories">
         </div>
         <div class="col-md-3 mb-2">
-          <input v-model="searchParams.location" type="text" class="form-control" placeholder="Lokacija">
+          <input v-model="searchParams.location" type="text" class="form-control" placeholder="Lokacija" @input="filterFactories">
         </div>
         <div class="col-md-2 mb-2">
-          <input v-model="searchParams.averageRating" type="number" class="form-control" placeholder="Prosečna ocena">
+          <input v-model="searchParams.averageRating" type="number" class="form-control" placeholder="Prosečna ocena" @input="filterFactories">
         </div>
-        <div class="col-md-1 mb-2">
+      </div>
+
+      <div class="row gx-5 gx-lg-1 align-items-center mt-3">
+        <div class="col-md-3 mb-2">
+          <label>
+            <input type="checkbox" v-model="chocolateCategoryFilters.regular" @change="updateChocolateCategoryFilters"> Regular
+          </label>
+          <label>
+            <input type="checkbox" v-model="chocolateCategoryFilters.cooking" @change="updateChocolateCategoryFilters"> Cooking
+          </label>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label>
+            <input type="checkbox" v-model="chocolateTypeFilters.milk" @change="updateChocolateTypeFilters"> Milk
+          </label>
+          <label>
+            <input type="checkbox" v-model="chocolateTypeFilters.dark" @change="updateChocolateTypeFilters"> Dark
+          </label>
+          <label>
+            <input type="checkbox" v-model="chocolateTypeFilters.white" @change="updateChocolateTypeFilters"> White
+          </label>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label>
+            <input type="checkbox" v-model="searchParams.isOpen" @change="filterFactories"> Prikaži samo otvorene
+          </label>
+        </div>
+        <div class="col-md-6 mb-2">
           <button @click="searchFactories" class="btn btn-primary w-100">
             Pretraži
           </button>
+        </div>
+      </div>
+
+      <!-- Sort Options -->
+      <div class="row gx-5 gx-lg-1 align-items-center mt-3">
+        <div class="col-md-4 mb-2">
+          <select v-model="sortParams.criterion" class="form-control">
+            <option value="">Sortiraj po...</option>
+            <option value="name">Naziv</option>
+            <option value="location">Lokacija</option>
+            <option value="rate">Prosečna ocena</option>
+          </select>
+        </div>
+        <div class="col-md-4 mb-2">
+          <select v-model="sortParams.ascending" class="form-control">
+            <option value="true">Rastuće</option>
+            <option value="false">Opadajuće</option>
+          </select>
         </div>
       </div>
     </div>
@@ -64,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
@@ -74,13 +119,32 @@ const title = ref("Fabrike čokolade");
 
 const searchParams = reactive({
   factoryName: '',
-  chocolateName: '', // New property for chocolateName search
+  chocolateName: '',
   location: '',
-  averageRating: null
+  averageRating: null,
+  chocolateType: '',
+  chocolateCategory: '',
+  isOpen: false
+});
+
+const sortParams = reactive({
+  criterion: '',
+  ascending: 'true'
 });
 
 const factories = ref([]);
 const filteredFactories = ref([]);
+
+const chocolateTypeFilters = reactive({
+  milk: false,
+  dark: false,
+  white: false
+});
+
+const chocolateCategoryFilters = reactive({
+  regular: false,
+  cooking: false
+});
 
 onMounted(async () => {
   await loadFactories();
@@ -100,19 +164,42 @@ const loadFactories = async () => {
 const filterFactories = () => {
   filteredFactories.value = factories.value.filter(factory => {
     const matchFactoryName = factory.name.toLowerCase().includes(searchParams.factoryName.toLowerCase());
-    const matchChocolateName = factoryContainsChocolate(factory, searchParams.chocolateName); // Call new function for chocolateName
+    const matchChocolateName = factoryContainsChocolate(factory, searchParams.chocolateName);
     const matchLocation = factory.location.toLowerCase().includes(searchParams.location.toLowerCase());
     const matchAverageRating = !searchParams.averageRating || factory.rate >= searchParams.averageRating;
+    const matchChocolateCategory =
+      (!chocolateCategoryFilters.regular || factoryContainsChocolateWithCategory(factory, 'Regular')) &&
+      (!chocolateCategoryFilters.cooking || factoryContainsChocolateWithCategory(factory, 'Cooking'));
+    const matchIsOpen = !searchParams.isOpen || factory.status == "Work";
+    const matchChocolateType =
+      (!chocolateTypeFilters.milk || factoryContainsChocolateWithType(factory, 'Milk')) &&
+      (!chocolateTypeFilters.dark || factoryContainsChocolateWithType(factory, 'Dark')) &&
+      (!chocolateTypeFilters.white || factoryContainsChocolateWithType(factory, 'White'));
 
-    return matchFactoryName && matchChocolateName && matchLocation && matchAverageRating;
+    return (
+      matchFactoryName &&
+      matchChocolateName &&
+      matchLocation &&
+      matchAverageRating &&
+      matchChocolateCategory &&
+      matchIsOpen &&
+      matchChocolateType
+    );
   });
 };
 
 const factoryContainsChocolate = (factory, chocolateName) => {
   // Implement logic to check if factory contains chocolate with given chocolateName
-  // This function should use factory.getChocolateIds() and check against the chocolates in your data
-  // Example: return factory.getChocolateIds().includes(chocolateId);
-  // You may need to adapt this based on your data structure
+  return true; // Replace with actual implementation
+};
+
+const factoryContainsChocolateWithType = (factory, chocolateType) => {
+  // Implement logic to check if factory contains chocolate with given chocolateType
+  return true; // Replace with actual implementation
+};
+
+const factoryContainsChocolateWithCategory = (factory, chocolateCategory) => {
+  // Implement logic to check if factory contains chocolate with given chocolateCategory
   return true; // Replace with actual implementation
 };
 
@@ -125,9 +212,12 @@ const searchFactories = async () => {
     const response = await axios.get('http://localhost:8080/WebShopAppREST/rest/factories/search', {
       params: {
         factoryName: searchParams.factoryName,
-        chocolateName: searchParams.chocolateName, // Pass chocolateName to backend
+        chocolateName: searchParams.chocolateName,
         location: searchParams.location,
-        averageRating: searchParams.averageRating
+        averageRating: searchParams.averageRating,
+        chocolateType: searchParams.chocolateType,
+        chocolateCategory: searchParams.chocolateCategory,
+        isOpen: searchParams.isOpen
       }
     });
     factories.value = response.data;
@@ -136,6 +226,36 @@ const searchFactories = async () => {
     console.error(error);
     title.value = "Greška u pretrazi";
   }
+};
+
+const sortedFactories = computed(() => {
+  let sorted = [...filteredFactories.value];
+  if (sortParams.criterion) {
+    sorted.sort((a, b) => {
+      let modifier = sortParams.ascending === 'true' ? 1 : -1;
+      if (a[sortParams.criterion] < b[sortParams.criterion]) return -1 * modifier;
+      if (a[sortParams.criterion] > b[sortParams.criterion]) return 1 * modifier;
+      return 0;
+    });
+  }
+  return sorted;
+});
+
+const updateChocolateTypeFilters = () => {
+  const selectedTypes = [];
+  if (chocolateTypeFilters.milk) selectedTypes.push('Milk');
+  if (chocolateTypeFilters.dark) selectedTypes.push('Dark');
+  if (chocolateTypeFilters.white) selectedTypes.push('White');
+  searchParams.chocolateType = selectedTypes.join(',');
+  filterFactories();
+};
+
+const updateChocolateCategoryFilters = () => {
+  const selectedCategories = [];
+  if (chocolateCategoryFilters.regular) selectedCategories.push('Regular');
+  if (chocolateCategoryFilters.cooking) selectedCategories.push('Cooking');
+  searchParams.chocolateCategory = selectedCategories.join(',');
+  filterFactories();
 };
 </script>
 
