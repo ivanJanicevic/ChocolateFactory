@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import beans.Coco;
@@ -43,6 +44,32 @@ public class CocoDAO {
 	        }
 	    }
 	    return null;
+	}
+	
+	public List<String> findChocolateIdsByCategory(String category) {
+	    List<String> chocolateIds = new ArrayList<>();
+	    if (category == null) {
+	        return chocolateIds;
+	    }
+	    for (Coco coco : cocos.values()) {
+	        if (coco.getCategory() != null && coco.getCategory().equalsIgnoreCase(category)) {
+	            chocolateIds.add(coco.getId());
+	        }
+	    }
+	    return chocolateIds;
+	}
+	
+	public List<String> findChocolateIdsByType(String type) {
+	    List<String> chocolateIds = new ArrayList<>();
+	    if (type == null) {
+	        return chocolateIds;
+	    }
+	    for (Coco coco : cocos.values()) {
+	        if (coco.getType() != null && coco.getType().equalsIgnoreCase(type)) {
+	            chocolateIds.add(coco.getId());
+	        }
+	    }
+	    return chocolateIds;
 	}
 
 	public Coco FindCoco(String id) {
