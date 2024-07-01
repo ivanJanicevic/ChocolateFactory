@@ -16,7 +16,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import beans.Coco;
-import beans.Factory;
 import dao.CocoDAO;
 
 @Path("/chocolates")
@@ -39,7 +38,7 @@ public class CocoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<Coco> getCocos() {
         System.out.println("Pozvana je metoda getCocos()");
-        return new ArrayList<>(cocoDAO.FindAll());
+        return new ArrayList<>(cocoDAO.findAll());
     }
 	
 	@GET
@@ -55,7 +54,7 @@ public class CocoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Coco getCocoById(@PathParam("id") String id) {
 		CocoDAO cocoDAO = (CocoDAO) ctx.getAttribute("cocoDAO");
-		return cocoDAO.FindCoco(id);
+		return cocoDAO.findCoco(id);
 	}
 	
 	@POST
@@ -65,7 +64,7 @@ public class CocoService {
 	public Coco addCoco(Coco coco) {
 		CocoDAO cocoDAO = (CocoDAO) ctx.getAttribute(("cocoDAO"));
 		System.out.println(coco.getId());
-		return cocoDAO.Save(coco);
+		return cocoDAO.save(coco);
 	}
 		
 	@DELETE
@@ -73,7 +72,7 @@ public class CocoService {
     @Produces(MediaType.APPLICATION_JSON)
 	public boolean deleteCoco(@PathParam("id") String id) {
 		CocoDAO cocoDAO = (CocoDAO) ctx.getAttribute("cocoDAO");
-        return cocoDAO.DeleteCoco(id);
+        return cocoDAO.deleteCoco(id);
     }
 	
 	@PUT
@@ -82,6 +81,6 @@ public class CocoService {
     @Consumes(MediaType.APPLICATION_JSON)
     public Coco updateCoco(@PathParam("id") String id, Coco updatedCoco) {
 		CocoDAO cocoDAO = (CocoDAO) ctx.getAttribute("cocoDAO");
-        return cocoDAO.UpdateCoco(id, updatedCoco);
+        return cocoDAO.updateCoco(id, updatedCoco);
     }
 }

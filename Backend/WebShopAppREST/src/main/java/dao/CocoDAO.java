@@ -17,19 +17,19 @@ import beans.Coco;
 public class CocoDAO {
 	
 	private HashMap<String, Coco> cocos = new HashMap<String, Coco>();
-	private String FileLocation;
+	private String fileLocation;
 	
 	public CocoDAO() {
 		
 	}
 	
 	public CocoDAO(String contextPath) {
-		FileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv";
-		LoadCocos(FileLocation);
+		this.fileLocation = new File(contextPath, "chocolates.csv").getAbsolutePath();
+		loadCocos(fileLocation);
 		//System.out.println(cocos.size() + "eeeee");
 	}
 
-	public Collection<Coco> FindAll() {
+	public Collection<Coco> findAll() {
 		return cocos.values();
 	}
 	
@@ -72,18 +72,18 @@ public class CocoDAO {
 	    return chocolateIds;
 	}
 
-	public Coco FindCoco(String id) {
+	public Coco findCoco(String id) {
 		return cocos.containsKey(id) ? cocos.get(id) : null;
 	}
 	
-	public Coco FindCocoByName(String name) {
+	public Coco findCocoByName(String name) {
 		return cocos.containsKey(name) ? cocos.get(name) : null;
 	}
 	
-	public Coco UpdateCoco(String id, Coco coco) {
+	public Coco updateCoco(String id, Coco coco) {
 		Coco c = cocos.containsKey(id) ? cocos.get(id) : null;
 		if (c == null) {
-			return Save(coco);
+			return save(coco);
 		} else {
 			c.setName(coco.getName());
 			c.setCost(coco.getCost());
@@ -101,14 +101,14 @@ public class CocoDAO {
 		return c;
 	}
 	
-	public Coco Save(Coco coco) {
-	    coco.setId(GenerateNewId());
+	public Coco save(Coco coco) {
+	    coco.setId(generateNewId());
 	    cocos.put(coco.getId(), coco);
-	    SaveChocolatesToFile();
+	    saveChocolatesToFile();
 	    return coco;
 	}
 
-	private String GenerateNewId() {
+	private String generateNewId() {
 	    int newId = cocos.keySet().stream()
 	        .mapToInt(id -> Integer.parseInt(id))
 	        .max()
@@ -116,10 +116,10 @@ public class CocoDAO {
 	    return String.valueOf(newId);
 	}
 	
-	public boolean DeleteCoco(String id) {
+	public boolean deleteCoco(String id) {
 	    if (cocos.containsKey(id)) {
 	        cocos.remove(id);
-	        SaveChocolatesToFile();
+	        saveChocolatesToFile();
 	        return true; // Uspesno obrisano
 	    } else {
 	        return false; // Objekat sa datim ID-om nije pronadjen
@@ -127,11 +127,11 @@ public class CocoDAO {
 	}
 
 
-	private void LoadCocos(String contextPath) {
+	private void loadCocos(String filePath) {
 		//System.out.println("OVde u laod je ucitano");
 		BufferedReader in = null;
 		try {
-			File file = new File(contextPath);
+			File file = new File(filePath);
 			in = new BufferedReader(new FileReader(file));
 			String line, id = "", name = "", cost = "", category = "", type = "", status = "", mass = "", details = "", picture = "", stock = "", isDeleted = "", factoryId = "";
 			StringTokenizer st;
@@ -170,9 +170,9 @@ public class CocoDAO {
 		
 	}
 	
-	private void SaveChocolatesToFile() {
-		System.out.println(FileLocation);
-	    try (BufferedWriter out = new BufferedWriter(new FileWriter("C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv"))) {
+	private void saveChocolatesToFile() {
+		System.out.println(fileLocation);
+	    try (BufferedWriter out = new BufferedWriter(new FileWriter(fileLocation))) {
 	        for (Coco cocolates : cocos.values()) {
 	        	System.out.println(cocolates.getName());
 	            String line = String.join(";",

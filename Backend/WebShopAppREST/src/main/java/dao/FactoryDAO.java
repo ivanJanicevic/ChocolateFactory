@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import beans.Coco;
 import beans.Factory;
 
 public class FactoryDAO {
@@ -30,15 +29,12 @@ public class FactoryDAO {
 	}
 	
 	public FactoryDAO(String contextPath) {
-		//System.out.println("!");
-		this.fileLocation = "C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\factories.csv";
-		this.cocoDAO = new CocoDAO("C:\\Users\\HP\\OneDrive\\Radna površina\\web\\CocoFactory\\Backend\\WebShopAppREST\\src\\main\\webapp\\chocolates.csv");
+		this.fileLocation = new File(contextPath, "factories.csv").getAbsolutePath();
+		this.cocoDAO = new CocoDAO(new File(contextPath, "chocolates.csv").getAbsolutePath());
 		loadFactories(fileLocation);
 	}
 
 	public Collection<Factory> findAll() {
-	    //System.out.println("OLEEE");
-	    	
 	    // Ažuriranje statusa svake fabrike
 	    for (Factory factory : factories.values()) {
 	        factory.setStatus(checkStatus(factory.getWorkingTime()));
@@ -65,7 +61,6 @@ public class FactoryDAO {
 	    return factoryList;
 	}
 
-
 	public Factory findFactory(String id) {
 	    Factory factory = factories.get(id);
 	    if (factory != null) {
@@ -74,7 +69,6 @@ public class FactoryDAO {
 	    return factory;
 	}
 
-	
 	public Factory updateFactory(String id, Factory factory) {
 		Factory f = factories.containsKey(id) ? factories.get(id) : null;
 		if (f == null) {
@@ -117,16 +111,13 @@ public class FactoryDAO {
 	    }
 	}
 
-
-	private void loadFactories(String contextPath) {
+	private void loadFactories(String filePath) {
 		BufferedReader in = null;
 		try {
-			File file = new File(contextPath);
-			System.out.println("!");
+			File file = new File(filePath);
 			in = new BufferedReader(new FileReader(file));
 			String line, id = "", name = "", workingTime = "" , location = "", pathToLogo = "", rate = "", isDeleted = "";
 			StringTokenizer st;
-			System.out.println(contextPath);
 			while ((line = in.readLine()) != null) {
 			    line = line.trim();
 			    if (line.equals("") || line.indexOf('#') == 0)
@@ -160,7 +151,6 @@ public class FactoryDAO {
 				catch (Exception e) { }
 			}
 		}
-		
 	}
 	
 	private void saveFactoriesToFile() {
@@ -176,7 +166,7 @@ public class FactoryDAO {
 	    	            String.valueOf(factory.getRate()),
 	    	            String.valueOf(factory.isDeleted()),
 	    	            String.valueOf(factory.getWorkingTime()),
-	    	            chocolateIdsStr // Dodato čuvanje chocolateIds
+	    	            chocolateIdsStr
 	    	    );
 	    	    out.write(line);
 	    	    out.newLine();
@@ -184,6 +174,26 @@ public class FactoryDAO {
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }
+	}
+	
+	public Factory addFactory(Factory factory) {
+	    if (factory.getName() == null || factory.getName().trim().isEmpty()) {
+	        factory.setName("Default Name");
+	    }
+	    if (factory.getLocation() == null || factory.getLocation().trim().isEmpty()) {
+	        factory.setLocation("Default Location");
+	    }
+	    if (factory.getWorkingTime() == null || factory.getWorkingTime().trim().isEmpty()) {
+	        factory.setWorkingTime("00:00-23:59");
+	    }
+
+	    factory.setStatus("Do not work");
+	    factory.setPathToLogo(factory.getPathToLogo() != null ? factory.getPathToLogo() : "");
+	    factory.setRate(factory.getRate() != 0.0 ? factory.getRate() : 0.0);
+        factory.setDeleted(factory.isDeleted());
+	    factory.setChocolateIds(factory.getChocolateIds() != null ? factory.getChocolateIds() : new ArrayList<>());
+
+	    return save(factory);
 	}
 	
 	public String checkStatus(String workingHours) {

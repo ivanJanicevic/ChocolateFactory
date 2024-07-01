@@ -11,9 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import beans.Coco;
 import beans.Comment;
-import dao.CocoDAO;
 import dao.CommentDAO;
 
 @Path("/comments")

@@ -10,7 +10,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import beans.Factory;
-import dao.CocoDAO;
 import dao.FactoryDAO;
 
 @Path("/factories")
@@ -35,7 +34,7 @@ public class FactoryService {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<Factory> getFactories() {
-        System.out.println("Pozvana je metoda getFactories()"); // Dodajte ovu liniju za ispisivanje poruke u konzolu
+        System.out.println("Pozvana je metoda getFactories()");
         return new ArrayList<>(factoryDAO.findAll());
     }
 
@@ -44,7 +43,7 @@ public class FactoryService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Factory addFactory(Factory factory) {
-        return factoryDAO.save(factory);
+        return factoryDAO.addFactory(factory);
     }
 
     @GET
